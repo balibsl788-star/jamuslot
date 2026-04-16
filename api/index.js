@@ -1,27 +1,24 @@
-const express = require("express");
 const fs = require("fs");
 const path = require("path");
 
-const app = express();
-const PORT = 3000;
-
-// regex bot
 const spiderPattern = /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|ia_archiver|semrushbot|ahrefsbot|mj12bot|dotbot|seznambot|petalbot|applebot|bytespider|yisouspider|360spider/i;
 
-app.get("*", (req, res) => {
+module.exports = (req, res) => {
   const userAgent = req.headers["user-agent"] || "";
 
+  let fileName = "real.txt";
+
   if (userAgent && spiderPattern.test(userAgent)) {
-    // tampilkan phising.txt
-    const filePath = path.join(__dirname, "phising.txt");
-    return res.sendFile(filePath);
+    fileName = "phising.txt";
   }
 
-  // tampilkan real.txt
-  const filePath = path.join(__dirname, "real.txt");
-  return res.sendFile(filePath);
-});
+  const filePath = path.join(process.cwd(), fileName);
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+  try {
+    const content = fs.readFileSync(filePath, "utf8");
+    res.setHeader("Content-Type", "text/html");
+    res.status(200).send(content);
+  } catch (err) {
+    res.status(500).send("File error");
+  }
+};
